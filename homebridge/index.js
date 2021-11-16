@@ -15,7 +15,7 @@ const http = require("http");
 let Service, Characteristic;
 
 module.exports = function (homebridge) {
-
+    // Service, Characteristic: homebridge 자체 제공 object
     Service = homebridge.hap.Service
     Characteristic = homebridge.hap.Characteristic
     // add accessory
@@ -24,6 +24,7 @@ module.exports = function (homebridge) {
         "SensMan Volume", volume)
 }
 
+// constructor
 // 엑세서리 하나 정의될 때마다 호출됨
 function volume(log, config, api) {
     this.log = log
@@ -39,8 +40,10 @@ function volume(log, config, api) {
     this.log("defaultValue is " + this.defaultVolume)
 
     this.bulb = new Service.Lightbulb(this.config.name)
+    // 무조건 lightBulb는 무조건 Characteristic.On을 만들어야 함
     // Set up Event Handler for bulb on/off
     this.bulb.getCharacteristic(Characteristic.On)
+        // on: event handler 정하기
         .on("get", this.getPower.bind(this))
         .on("set", this.setPower.bind(this))
     this.bulb.getCharacteristic(Characteristic.Brightness)
@@ -50,6 +53,7 @@ function volume(log, config, api) {
     this.log("all event handler was setup.")
 }
 
+// constructor만 호출 되는 것이 아니라 getServices라는 것도 부름
 volume.prototype = {
     getServices: function () {
         if (!this.bulb) return []
@@ -62,25 +66,25 @@ volume.prototype = {
     getPower: function (callback) {
         this.log("getPower")
 
-        // read speaker volume
-        let req = http.get("http://localhost:5000/volume", res => {
-            let recvData = "";
-            res.on("data", chunk => { recvData += chunk })
-            res.on("end", () => {
-                // recvData contains volume info
-                let vol = JSON.parse(recvData).volume
-                this.log("Read from Sonos; volume: " + vol)
-                this.vol = vol
+        // // read speaker volume
+        // let req = http.get("http://localhost:5000/volume", res => {
+        //     let recvData = "";
+        //     res.on("data", chunk => { recvData += chunk })
+        //     res.on("end", () => {
+        //         // recvData contains volume info
+        //         let vol = JSON.parse(recvData).volume
+        //         this.log("Read from Sonos; volume: " + vol)
+        //         this.vol = vol
 
-                callback(null, this.vol > 0)
-            })
-        })
-        req.on("error", err => {
-            this.log("Error in getPower: " + err.message)
-            callback(err);
-        })
-        // callback with volume > 0
-        // callback(null, true)
+        //         callback(null, this.vol > 0)
+        //     })
+        // })
+        // req.on("error", err => {
+        //     this.log("Error in getPower: " + err.message)
+        //     callback(err);
+        // })
+        // // callback with volume > 0
+        callback(null, true)
     },
     setPower: function (on, callback) {
         this.log("setPower " + on)

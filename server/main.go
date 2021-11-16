@@ -1,9 +1,15 @@
 package main
 
 import (
-	"fmt"
+	"homebridge/handler"
+	"net/http"
 )
 
 func main() {
-	fmt.Println("hello world")
+	webHandler := handler.MakeHandler()
+
+	err := http.ListenAndServe(":8000", webHandler)
+	if err != nil {
+		panic(err)
+	}
 }
